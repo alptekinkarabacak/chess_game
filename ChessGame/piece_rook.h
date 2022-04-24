@@ -11,6 +11,7 @@
 
 class PieceRook : public PieceInterface{
 public:
+    PieceRook(int position_x, int position_y, Colour piece_colour);
     int m_points{5};
     int m_position_x{0};
     int m_position_y{0};

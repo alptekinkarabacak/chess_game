@@ -30,3 +30,24 @@ void PieceRook::createMoves() {
     moveSet4->backward = 8;
     m_piece_moves.push_back(moveSet4);
 }
+
+PieceRook::PieceRook(int position_x, int position_y, Colour piece_colour) :m_position_x(position_x), m_position_y(position_y) {
+    m_points = 5;
+    m_cross_move = false;
+    m_straight_move = true;
+    m_special_pawn_move = false;
+    m_special_knight_move = false;
+    m_max_move_count_x = 8;
+    m_max_move_count_y = 8;
+
+    int m_points{5};
+    int m_position_x{0};
+    int m_position_y{0};
+    bool m_cross_move{false};
+    bool m_straight_move{true};
+    bool m_special_pawn_move{false};
+    bool m_special_knight_move{false};
+    int m_max_move_count_x{8};
+    int m_max_move_count_y{8};
+
+}

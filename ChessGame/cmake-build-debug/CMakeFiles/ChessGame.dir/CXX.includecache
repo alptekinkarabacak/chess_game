@@ -6,12 +6,6 @@
 
 #IncludeRegexTransform: 
 
-/Users/alptekinsmacbook/CLionProjects/ChessGame/main.cpp
-iostream
--
-table.h
-/Users/alptekinsmacbook/CLionProjects/ChessGame/table.h
-
 /Users/alptekinsmacbook/CLionProjects/ChessGame/move_set.h
 
 /Users/alptekinsmacbook/CLionProjects/ChessGame/peace_interface.h

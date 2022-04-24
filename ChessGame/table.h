@@ -18,11 +18,11 @@ public:
     static constexpr int table_size{8};
     std::array<std::array<PieceInterface *, 8>, 8 > m_loaded_table;
     int loadFromFile(std::string fileName, std::vector<std::string> &stringOfPieces);
-    std::array<std::array<PieceInterface *, 8>, 8 > loadToTable(std::vector<std::string> stringOfPieces, std::array<std::array<PieceInterface *, 8>, 8 > &pieceTable);
-    void calculatePiecePoints(std::array<std::array<PieceInterface *, 8>, 8 > &pieceTable);
-    void totalPiecePoints(std::array<std::array<PieceInterface *, 8>, 8> &pieceTable);
+    std::array<std::array<PieceInterface *, 8>, 8 > loadToTable(std::vector<std::string> stringOfPieces);
+    void calculatePiecePoints();
+    void totalPiecePoints();
     void test(std::array<std::array<PieceInterface *, 8>, 8 > &&pieceTable) {
-        pieceTable[0][0]->m_points = 20;
+        pieceTable[0][0]->m_points = 30;
     }
 };
 

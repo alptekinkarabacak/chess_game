@@ -46,7 +46,7 @@ int Table::loadFromFile(std::string fileName, std::vector<std::string> &stringOf
     return 0;
 }
 
-std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<std::string> stringOfPieces, std::array<std::array<PieceInterface *, 8>, 8 > &pieceTable) {
+std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<std::string> stringOfPieces) {
     /*
     int number_of_pawn, number_of_queen, number_of_rook, number_of_knight, number_of_king, number_of_bishop;
     number_of_rook = number_of_bishop = number_of_king = number_of_knight = number_of_pawn = number_of_queen = 0;
@@ -55,25 +55,24 @@ std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<
     int x = 0;
     int y = 0;
     for(auto &string_piece : stringOfPieces) {
+        Colour piece_colour;
         switch (string_piece.at(0)) {
             case 'k':
                 ++number_of_rook;
                 if (number_of_rook > PieceRook::max_number_of_count) {
                     std::cout<<"Possible rook count limit has overcame!\n";
                 } else {
-                    PieceRook* Rook = new PieceRook;
                     if (string_piece.at(1) == 's') {
-                        Rook->m_piece_colour = Colour::Black;
+                        piece_colour = Colour::Black;
                     } else if (string_piece.at(1) == 'b') {
-                        Rook->m_piece_colour = Colour::White;
+                        piece_colour = Colour::White;
                     } else {
                         std::cout<<"Unknown colour type\n";
                     }
 
-                    Rook->m_points = 20;
-                    Rook->m_position_x = x;
-                    Rook->m_position_y = y;
-                    pieceTable[x][y] = Rook;
+                    PieceRook* Rook = new PieceRook(x, y, piece_colour);
+                    m_loaded_table[x][y] = Rook; // TODO: the problem is started here, when I change the Rook' s attributes
+                                                 // I cannot verify my changes on Rook like on this file at line 238.
                 }
                 break;
             case 'a':
@@ -92,7 +91,7 @@ std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<
 
                     Knight->m_position_x = x;
                     Knight->m_position_y = y;
-                    pieceTable[x][y] = Knight;
+                    m_loaded_table[x][y] = Knight;
                 }
                 break;
             case 's':
@@ -111,7 +110,7 @@ std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<
 
                     King->m_position_x = x;
                     King->m_position_y = y;
-                    pieceTable[x][y] = King;
+                    m_loaded_table[x][y] = King;
                 }
                 break;
             case 'v':
@@ -130,7 +129,7 @@ std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<
 
                     Queen->m_position_x = x;
                     Queen->m_position_y = y;
-                    pieceTable[x][y] = Queen;
+                    m_loaded_table[x][y] = Queen;
                 }
                 break;
             case 'f':
@@ -149,7 +148,7 @@ std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<
 
                     Bishop->m_position_x = x;
                     Bishop->m_position_y = y;
-                    pieceTable[x][y] = Bishop;
+                    m_loaded_table[x][y] = Bishop;
                 }
                 break;
             case 'p':
@@ -168,12 +167,12 @@ std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<
 
                     Pawn->m_position_x = x;
                     Pawn->m_position_y = y;
-                    pieceTable[x][y] = Pawn;
+                    m_loaded_table[x][y] = Pawn;
                 }
 
                 break;
             default:
-                pieceTable[x][y] = nullptr;
+                m_loaded_table[x][y] = nullptr;
                 break;
         }
         ++y;
@@ -182,26 +181,26 @@ std::array<std::array<PieceInterface *, 8>, 8 > Table::loadToTable (std::vector<
             y = 0;
             if (x == 8) {
                 std::cout<<"All pieces are placed.\n";
-                return pieceTable;
+                return m_loaded_table;
             }
         }
     }
 }
 
-void Table::calculatePiecePoints(std::array<std::array<PieceInterface *, 8>, 8> &pieceTable) {
+void Table::calculatePiecePoints() {
     int x{0}, y{0};
-    pieceTable[0][0]->m_piece_colour;
-    for(auto &row : pieceTable) {
+    std::cout<<m_loaded_table[0][1]<<std::endl;
+    for(auto &row : m_loaded_table) {
         for(auto piece : row) {
             if (piece != nullptr) {
-                if (pieceTable[0][1]->m_cross_move == true) {
+                if (m_loaded_table[0][1]->m_cross_move == true) {
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     for (int i = 0; x < 8 || y < 8 || i <= piece->m_max_move_count_x; i++) {
                         ++x;
                         ++y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
 
@@ -210,8 +209,8 @@ void Table::calculatePiecePoints(std::array<std::array<PieceInterface *, 8>, 8> 
                     for (int i = 0; x > 0 || y < 8 || i <= piece->m_max_move_count_x; i++) {
                         --x;
                         ++y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
 
@@ -220,8 +219,8 @@ void Table::calculatePiecePoints(std::array<std::array<PieceInterface *, 8>, 8> 
                     for (int i = 0; x < 8 || y > 0 || i <= piece->m_max_move_count_x; i++) {
                         ++x;
                         --y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
 
@@ -230,110 +229,110 @@ void Table::calculatePiecePoints(std::array<std::array<PieceInterface *, 8>, 8> 
                     for (int i = 0; x > 0 || y > 0 || i <= piece->m_max_move_count_x; i++) {
                         --x;
                         --y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
                 }
 
-                if (pieceTable[0][0]->m_straight_move == true) {
+                if (piece->m_straight_move) {
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     for (int i = 0; y < 8 || i <= piece->m_max_move_count_y; i++) {
                         ++y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
 
                     y = piece->m_position_y;
                     for (int i = 0; y > 0 || i <= piece->m_max_move_count_y; i++) {
                         --y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
 
                     y = piece->m_position_y;
                     for (int i = 0; x < 8 || i <= piece->m_max_move_count_x; i++) {
                         ++x;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
 
                     x = piece->m_position_x;
                     for (int i = 0; x > 8 || i <= piece->m_max_move_count_x; i++) {
                         --x;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
                 }
 
-                if (pieceTable[0][1]->m_special_knight_move) {
+                if (m_loaded_table[0][1]->m_special_knight_move) {
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     ++y;
                     x += 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
 
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     ++y;
                     x -= 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
 
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     --y;
                     x += 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
 
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     --y;
                     x -= 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
 
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     ++x;
                     y += 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
 
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     --x;
                     y += 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
 
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     ++x;
                     y -= 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
 
                     x = piece->m_position_x;
                     y = piece->m_position_y;
                     --x;
                     y -= 2;
-                    if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                        pieceTable[x][y]->m_points /= 2;
+                    if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                        m_loaded_table[x][y]->m_points /= 2;
                     }
                 }
 
@@ -343,32 +342,32 @@ void Table::calculatePiecePoints(std::array<std::array<PieceInterface *, 8>, 8> 
                         y = piece->m_position_y;
                         --x;
                         --y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
 
                         x = piece->m_position_x;
                         y = piece->m_position_y;
                         ++x;
                         --y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     } else {
                         x = piece->m_position_x;
                         y = piece->m_position_y;
                         ++x;
                         ++y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
 
                         x = piece->m_position_x;
                         y = piece->m_position_y;
                         --x;
                         ++y;
-                        if (pieceTable[x][y]->m_piece_colour != piece->m_piece_colour) {
-                            pieceTable[x][y]->m_points /= 2;
+                        if (m_loaded_table[x][y]->m_piece_colour != piece->m_piece_colour) {
+                            m_loaded_table[x][y]->m_points /= 2;
                         }
                     }
                 }
@@ -377,9 +376,9 @@ void Table::calculatePiecePoints(std::array<std::array<PieceInterface *, 8>, 8> 
     }
 }
 
-void Table::totalPiecePoints(std::array<std::array<PieceInterface *, 8>, 8> &pieceTable) {
+void Table::totalPiecePoints() {
     double black_team{0}, white_team{0};
-    for(auto & row : pieceTable) {
+    for(auto & row : m_loaded_table) {
         for(auto & piece : row) {
             if (piece != nullptr) {
                 if (piece->m_piece_colour == Colour::Black) {
